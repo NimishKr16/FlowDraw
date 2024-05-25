@@ -14,6 +14,7 @@ const App = () => {
     <div className={`App ${darkMode ? 'dark-mode' : ''}`}>
       <header>
         <h1>FlowDraw</h1>
+  <h2>By Nimish Kumar </h2>
         <button onClick={toggleDarkMode}>
           Switch to {darkMode ? 'Light' : 'Dark'} Mode
         </button>
