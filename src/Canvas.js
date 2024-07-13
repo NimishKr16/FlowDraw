@@ -5,6 +5,7 @@ const Canvas = ({ darkMode }) => {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState(null);
+  const [history, setHistory] = useState([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -24,7 +25,14 @@ const Canvas = ({ darkMode }) => {
     }
   }, []);
 
+  const saveState = () => {
+    const canvas = canvasRef.current;
+    const drawing = canvas.toDataURL();
+    setHistory((prevHistory) => [...prevHistory, drawing]);
+  };
+
   const startDrawing = ({ nativeEvent }) => {
+    saveState();
     const { offsetX, offsetY } = nativeEvent;
     context.beginPath();
     context.moveTo(offsetX, offsetY);
@@ -45,6 +53,7 @@ const Canvas = ({ darkMode }) => {
   };
 
   const erase = () => {
+    saveState();
     context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     saveDrawing();
   };
@@ -64,10 +73,26 @@ const Canvas = ({ darkMode }) => {
     link.click();
   };
 
+  const undo = () => {
+    if (history.length === 0) return;
+    const lastDrawing = history.pop();
+    setHistory([...history]);
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.src = lastDrawing;
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+    };
+  };
+
   return (
     <div>
       <button onClick={erase}>Erase</button>
       <button onClick={saveImage}>Save</button>
+      <button onClick={undo}>Undo</button>
       <canvas
         ref={canvasRef}
         onTouchStart={startDrawing}
